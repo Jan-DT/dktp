@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<configuration status="false" scan="true" scanPeriod="15 seconds">
+    <import class="ch.qos.logback.core.ConsoleAppender" />
+    <import class="ch.qos.logback.core.FileAppender" />
+    <import class="ch.qos.logback.core.rolling.RollingFileAppender" />
+    <import class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy" />
+    <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder" />
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
+    <appender name="STDOUT" class="ConsoleAppender">
+        <encoder>
+            <pattern>%gray(%d{dd.MM HH:mm:ss.SSS}) %highlight([%thread] %-5level) %logger{36} %gray(-) %msg%n</pattern>
+        </encoder>
+        <withJansi>true</withJansi>
+    </appender>
+
+<!--    <appender name="LATEST-FILE" class="FileAppender">-->
+<!--        <file>logs/latest.log</file>-->
+<!--        <encoder>-->
+<!--            <pattern>%d{yyyy.dd.MM HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
+<!--        </encoder>-->
+<!--        <append>false</append>-->
+<!--    </appender>-->
+
+<!--    <appender name="ROLLING-FILE" class="RollingFileAppender">-->
+<!--        <encoder>-->
+<!--            <pattern>%d{yyyy.dd.MM HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
+<!--        </encoder>-->
+<!--        <rollingPolicy class="TimeBasedRollingPolicy">-->
+<!--            <fileNamePattern>logs/%d{yyyy-MM-dd}.log</fileNamePattern>-->
+<!--            <maxHistory>30</maxHistory>-->
+<!--            <totalSizeCap>2GB</totalSizeCap>-->
+<!--        </rollingPolicy>-->
+<!--    </appender>-->
+
+    <root level="DEBUG">
+        <appender-ref ref="LATEST-FILE" />
+        <appender-ref ref="ROLLING-FILE" />
+    </root>
+    <root level="TRACE">
+        <appender-ref ref="STDOUT" />
+    </root>
+</configuration>
