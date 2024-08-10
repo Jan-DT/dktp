@@ -10,7 +10,7 @@ I hope it is fun, because I have no clue will be! Also, in true game jam style i
 ## Game Submission
 | Name | **Don't Kill the President!** |
 |---|---|
-| Description | Follow your dreams to become an amateur garage scientist, and achieve your goals of... poisoning the president? |
+| Description | Follow your dreams to become an amateur garage scientist, and achieve your goals of... poisoning the president? Though, watch out, as mixing the wrong ingredients might lead to unexpected results... Will you successfully figure out the secret formula before anyone catches you? |
 | Source Code | <https://github.com/Jan-DT/dktp> |
 | Server Implementation | Minestom |
 | Native version | 1.21 |
