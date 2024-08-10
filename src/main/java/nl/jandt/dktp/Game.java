@@ -1,11 +1,13 @@
-package nl.jandt.splagoon;
+package nl.jandt.dktp;
 
-import net.hollowcube.polar.AnvilPolar;
-import net.hollowcube.polar.PolarReader;
-import net.hollowcube.polar.PolarWorld;
-import net.hollowcube.polar.PolarWriter;
+import net.hollowcube.polar.*;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.coordinate.Pos;
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
+import net.minestom.server.event.player.PlayerSpawnEvent;
+import net.minestom.server.instance.Instance;
+import net.minestom.server.instance.LightingChunk;
+import nl.jandt.dktp.scene.GarageScene;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,9 +20,10 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Splagoon {
-    private static final Logger log = LoggerFactory.getLogger(Splagoon.class);
+public class Game {
+    private static final Logger log = LoggerFactory.getLogger(Game.class);
     private static final Map<String, PolarWorld> worlds = new HashMap<>();
+    private static final SceneManager sceneManager = new SceneManager();
 
     public static void main(String[] args) {
         log.info("Initializing server...");
@@ -34,6 +37,15 @@ public class Splagoon {
 
         eventHandler.addListener(AsyncPlayerConfigurationEvent.class, e -> {
             log.info("Configuring player {}...", e.getPlayer());
+            e.setSpawningInstance(makeInstance(worlds.get("dktp1")));
+            e.getPlayer().setRespawnPoint(new Pos(0, 1, 0));
+        });
+
+        eventHandler.addListener(PlayerSpawnEvent.class, e -> {
+            if (!e.isFirstSpawn()) return;
+            final var player = (CustomPlayer) e.getPlayer();
+
+            getSceneManager().switchScene(player, new GarageScene(player));
         });
 
         MinecraftServer.getConnectionManager().setPlayerProvider(CustomPlayer::new);
@@ -41,8 +53,16 @@ public class Splagoon {
         server.start("0.0.0.0", 25565);
     }
 
+    static Instance makeInstance(PolarWorld world) {
+        final var instance = MinecraftServer.getInstanceManager().createInstanceContainer();
+        instance.setChunkLoader(new PolarLoader(world));
+        instance.setChunkSupplier(LightingChunk::new);
+
+        return instance;
+    }
+
     static void loadWorlds(Map<String, PolarWorld> worldMap, String worldDir) {
-        final var worldsPath = Path.of(worldDir);
+        final var worldsPath = Path.of("", worldDir);
         final var importPath = worldsPath.resolve("import");
 
         // import anvil worlds
@@ -72,7 +92,7 @@ public class Splagoon {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(worldsPath)) {
             for (Path path : stream) {
                 // checks if path should be valid polar file
-                if (Files.isDirectory(path) || !path.endsWith(".polar")) continue;
+                if (Files.isDirectory(path) || !path.toString().endsWith(".polar")) continue;
 
                 try (var reader = new FileInputStream(path.toFile())) {
                     final PolarWorld world = PolarReader.read(reader.readAllBytes());
@@ -95,4 +115,7 @@ public class Splagoon {
         return worlds;
     }
 
+    public static SceneManager getSceneManager() {
+        return sceneManager;
+    }
 }

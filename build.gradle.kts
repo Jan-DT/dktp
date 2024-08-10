@@ -37,6 +37,6 @@ tasks.test {
 
 tasks.withType<Jar> {
     manifest {
-        attributes["Main-Class"] = "nl.jandt.splagoon.Splagoon"
+        attributes["Main-Class"] = "nl.jandt.dktp.Splagoon"
     }
 }
