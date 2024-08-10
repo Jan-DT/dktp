@@ -3,8 +3,8 @@ package nl.jandt.dktp;
 import net.hollowcube.polar.*;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
-import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
-import net.minestom.server.event.player.PlayerSpawnEvent;
+import net.minestom.server.entity.GameMode;
+import net.minestom.server.event.player.*;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.LightingChunk;
 import nl.jandt.dktp.scene.GarageScene;
@@ -16,14 +16,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
+
 
 public class Game {
     private static final Logger log = LoggerFactory.getLogger(Game.class);
     private static final Map<String, PolarWorld> worlds = new HashMap<>();
     private static final SceneManager sceneManager = new SceneManager();
+
+    private static final Random random = new Random();
 
     public static void main(String[] args) {
         log.info("Initializing server...");
@@ -36,7 +41,7 @@ public class Game {
         final var eventHandler = MinecraftServer.getGlobalEventHandler();
 
         eventHandler.addListener(AsyncPlayerConfigurationEvent.class, e -> {
-            log.info("Configuring player {}...", e.getPlayer());
+            log.info("Configuring player '{}'...", e.getPlayer());
             e.setSpawningInstance(makeInstance(worlds.get("dktp1")));
             e.getPlayer().setRespawnPoint(new Pos(0, 1, 0));
         });
@@ -45,8 +50,14 @@ public class Game {
             if (!e.isFirstSpawn()) return;
             final var player = (CustomPlayer) e.getPlayer();
 
-            getSceneManager().switchScene(player, new GarageScene(player));
+            getSceneManager().switchScene(player, new GarageScene(player, random.nextInt()));
+            player.setGameMode(GameMode.ADVENTURE);
         });
+
+        eventHandler.addListener(PlayerSwapItemEvent.class, e -> e.setCancelled(true));
+        eventHandler.addListener(PlayerChangeHeldSlotEvent.class, e -> e.setCancelled(true));
+        eventHandler.addListener(PlayerBlockBreakEvent.class, e -> e.setCancelled(true));
+        eventHandler.addListener(PlayerBlockPlaceEvent.class, e -> e.setCancelled(true));
 
         MinecraftServer.getConnectionManager().setPlayerProvider(CustomPlayer::new);
 
@@ -78,11 +89,13 @@ public class Game {
                 try (var writer = new FileOutputStream(newPolarFile.toFile(), false)) {
                     writer.write(PolarWriter.write(AnvilPolar.anvilToPolar(path)));
                 } catch (Exception e) {
-                    log.error("Failed to import world {}: {}", path, e.toString());
+                    log.error("Failed to import world '{}': {}", path, e.toString());
                     continue;
                 }
-                log.debug("Imported world {}", path.toString());
+                log.debug("Imported world '{}'", path.toString());
             }
+        } catch (NoSuchFileException e) {
+            log.debug("Import directory at '{}' not located, skipping...", importPath);
         } catch (IOException e) {
             log.error("Failed to read world import directory: {}", e.toString());
         }
@@ -99,10 +112,10 @@ public class Game {
                     final var worldName = path.getFileName().toString().replace(".polar", "");
                     loadedWorlds.put(worldName, world);
                 } catch (Exception e) {
-                    log.error("Failed to load world {}: {}", path, e.toString());
+                    log.error("Failed to load world '{}': {}", path, e.toString());
                     continue;
                 }
-                log.debug("Loaded world {}", path.toString());
+                log.debug("Loaded world '{}'", path.toString());
             }
         } catch (IOException e) {
             log.error("Failed to read world directory: {}", e.toString());

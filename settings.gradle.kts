@@ -1,2 +1,1 @@
-rootProject.name = "splagoon"
-
+rootProject.name = "dktp"

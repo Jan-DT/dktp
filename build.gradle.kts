@@ -2,7 +2,7 @@ plugins {
     id("java")
 }
 
-group = "nl.jandt.splagoon"
+group = "nl.jandt.dktp"
 version = "1.0-SNAPSHOT"
 
 java {
@@ -37,6 +37,6 @@ tasks.test {
 
 tasks.withType<Jar> {
     manifest {
-        attributes["Main-Class"] = "nl.jandt.dktp.Splagoon"
+        attributes["Main-Class"] = "nl.jandt.dktp.Game"
     }
 }
