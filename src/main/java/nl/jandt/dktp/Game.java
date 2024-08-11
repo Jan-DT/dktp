@@ -41,7 +41,7 @@ public class Game {
 
     private static final UUID packUUID = UUID.fromString("8ab8fad0-c49b-41cd-97c3-1d501a3825e0");
     private static final URI packUri = URI.create("https://connect.jandt.nl/static/dktp-resource-pack-v1.zip");
-    private static final String packHash = "8c4c07d5232f34473bbe8c9edfb6f443196f844a";
+    private static final String packHash = "0c0f25936fc344d9018567876de965179c333de0";
     private static final ResourcePackRequest resourcePack = ResourcePackRequest.resourcePackRequest()
             .packs(ResourcePackInfo.resourcePackInfo(packUUID, packUri, packHash))
             .prompt(mm.deserialize("<#33ff33>This resource pack is completely optional, but it does improve your experience."))
