@@ -1,19 +1,28 @@
 package nl.jandt.dktp;
 
 import net.hollowcube.polar.*;
+import net.kyori.adventure.resource.ResourcePackInfo;
+import net.kyori.adventure.resource.ResourcePackRequest;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.command.builder.Command;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.GameMode;
+import net.minestom.server.entity.Player;
 import net.minestom.server.event.player.*;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.LightingChunk;
 import nl.jandt.dktp.scene.GarageScene;
+import nl.jandt.dktp.scene.PresidentScene;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -21,12 +30,22 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 
 
 public class Game {
     private static final Logger log = LoggerFactory.getLogger(Game.class);
     private static final Map<String, PolarWorld> worlds = new HashMap<>();
     private static final SceneManager sceneManager = new SceneManager();
+    private static final MiniMessage mm = MiniMessage.miniMessage();
+
+    private static final UUID packUUID = UUID.fromString("8ab8fad0-c49b-41cd-97c3-1d501a3825e0");
+    private static final URI packUri = URI.create("https://connect.jandt.nl/static/dktp-resource-pack-v1.zip");
+    private static final String packHash = "8c4c07d5232f34473bbe8c9edfb6f443196f844a";
+    private static final ResourcePackRequest resourcePack = ResourcePackRequest.resourcePackRequest()
+            .packs(ResourcePackInfo.resourcePackInfo(packUUID, packUri, packHash))
+            .prompt(mm.deserialize("<#33ff33>This resource pack is completely optional, but it does improve your experience."))
+            .required(false).build();
 
     private static final Random random = new Random();
 
@@ -40,19 +59,30 @@ public class Game {
 
         final var eventHandler = MinecraftServer.getGlobalEventHandler();
 
+
         eventHandler.addListener(AsyncPlayerConfigurationEvent.class, e -> {
             log.info("Configuring player '{}'...", e.getPlayer());
             e.setSpawningInstance(makeInstance(worlds.get("dktp1")));
-            e.getPlayer().setRespawnPoint(new Pos(0, 1, 0));
+            e.getPlayer().setRespawnPoint(new Pos(0, 0, 0));
+
+            e.getPlayer().sendResourcePacks(resourcePack);
         });
 
         eventHandler.addListener(PlayerSpawnEvent.class, e -> {
-            if (!e.isFirstSpawn()) return;
-            final var player = (CustomPlayer) e.getPlayer();
+            e.getPlayer().setHeldItemSlot((byte) 4);
 
-            getSceneManager().switchScene(player, new GarageScene(player, random.nextInt()));
-            player.setGameMode(GameMode.ADVENTURE);
+            if (!e.isFirstSpawn()) return;
+
+            startGame((CustomPlayer) e.getPlayer());
         });
+
+        final var commandManager = MinecraftServer.getCommandManager();
+        final var resetCommand = new Command("reset");
+        resetCommand.addSyntax((sender, context) -> {
+            ((CustomPlayer) sender).setInstance(makeInstance(worlds.get("dktp1")));
+            startGame((CustomPlayer) sender);
+        });
+        commandManager.register(resetCommand);
 
         eventHandler.addListener(PlayerSwapItemEvent.class, e -> e.setCancelled(true));
         eventHandler.addListener(PlayerChangeHeldSlotEvent.class, e -> e.setCancelled(true));
@@ -64,12 +94,18 @@ public class Game {
         server.start("0.0.0.0", 25565);
     }
 
-    static Instance makeInstance(PolarWorld world) {
+    static @NotNull Instance makeInstance(PolarWorld world) {
         final var instance = MinecraftServer.getInstanceManager().createInstanceContainer();
         instance.setChunkLoader(new PolarLoader(world));
         instance.setChunkSupplier(LightingChunk::new);
 
         return instance;
+    }
+
+    static void startGame(CustomPlayer player) {
+        getSceneManager().switchScene(player, new GarageScene(player, random.nextInt()));
+//            getSceneManager().switchScene(player, new PresidentScene(player));
+        player.setGameMode(GameMode.ADVENTURE);
     }
 
     static void loadWorlds(Map<String, PolarWorld> worldMap, String worldDir) {

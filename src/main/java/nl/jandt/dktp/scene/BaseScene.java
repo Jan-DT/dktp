@@ -15,6 +15,8 @@ public abstract class BaseScene implements Scene {
     private final EventNode<Event> eventNode;
     private final CustomPlayer player;
     private final Instance instance;
+    private boolean active = false;
+    private int visit = 0;
 
     public BaseScene(String id, CustomPlayer player, Instance instance) {
         this.sceneId = id;
@@ -54,5 +56,24 @@ public abstract class BaseScene implements Scene {
         return instance;
     }
 
+    @Override
+    public void start() {
+        this.active = true;
+        this.visit++;
+    }
 
+    @Override
+    public void end() {
+        this.active = false;
+    }
+
+    @Override
+    public boolean isActive() {
+        return active;
+    }
+
+    @Override
+    public int getVisit() {
+        return visit;
+    }
 }
