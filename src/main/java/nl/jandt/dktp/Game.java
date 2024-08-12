@@ -3,13 +3,11 @@ package nl.jandt.dktp;
 import net.hollowcube.polar.*;
 import net.kyori.adventure.resource.ResourcePackInfo;
 import net.kyori.adventure.resource.ResourcePackRequest;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.GameMode;
-import net.minestom.server.entity.Player;
 import net.minestom.server.event.player.*;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.LightingChunk;
@@ -55,7 +53,7 @@ public class Game {
 
         log.info("Loading worlds...");
         loadWorlds(worlds, "worlds");
-        log.info("Loaded {} worlds successfully.", worlds.size());
+        log.info("Loaded {} worlds successfully.", worlds().size());
 
         final var eventHandler = MinecraftServer.getGlobalEventHandler();
 
@@ -103,11 +101,13 @@ public class Game {
     }
 
     static void startGame(CustomPlayer player) {
-        getSceneManager().switchScene(player, new GarageScene(player, random.nextInt()));
-//            getSceneManager().switchScene(player, new PresidentScene(player));
+        // TODO: change seed to random!
+//        getSceneManager().switchScene(player, new GarageScene(player, 1));
+        getSceneManager().switchScene(player, new PresidentScene(player));
         player.setGameMode(GameMode.ADVENTURE);
     }
 
+    @SuppressWarnings("SameParameterValue")
     static void loadWorlds(Map<String, PolarWorld> worldMap, String worldDir) {
         final var worldsPath = Path.of("", worldDir);
         final var importPath = worldsPath.resolve("import");

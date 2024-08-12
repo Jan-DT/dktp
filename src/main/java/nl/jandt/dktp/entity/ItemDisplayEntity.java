@@ -9,11 +9,14 @@ import net.minestom.server.item.ItemComponent;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.tag.Tag;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 
 public class ItemDisplayEntity extends StaticEntity {
+    private @Nullable InteractEntity interaction;
 
     private ItemDisplayEntity() {
         super(EntityType.ITEM_DISPLAY);
@@ -31,10 +34,11 @@ public class ItemDisplayEntity extends StaticEntity {
     }
 
     public InteractEntity addInteraction(float width, float height, Pos pos, Consumer<PlayerEntityInteractEvent> consumer) {
-        final var interaction = new InteractEntity(width, height);
+        interaction = new InteractEntity(width, height);
         interaction.setInstance(getInstance(), pos);
         interaction.setConsumer(consumer);
         interaction.setTag(Tag.Component("Tooltip"), getItem().get(ItemComponent.ITEM_NAME));
+
         return interaction;
     }
 
@@ -44,6 +48,10 @@ public class ItemDisplayEntity extends StaticEntity {
 
     public InteractEntity addInteraction(float width, float height) {
         return addInteraction(width, height, null);
+    }
+
+    public Optional<InteractEntity> getInteraction() {
+        return Optional.ofNullable(interaction);
     }
 
     public void setItem(ItemStack itemStack) {

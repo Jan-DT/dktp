@@ -9,9 +9,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
+@SuppressWarnings("UnusedReturnValue")
 public class InteractEntity extends StaticEntity {
     private static final Logger log = LoggerFactory.getLogger(InteractEntity.class);
     private Consumer<PlayerEntityInteractEvent> consumer;
+    private boolean allowWhileLocked = false;
 
     public InteractEntity() {
         super(EntityType.INTERACTION);
@@ -30,15 +32,26 @@ public class InteractEntity extends StaticEntity {
         setConsumer(consumer);
     }
 
+    public boolean doesAllowWhileLocked() {
+        return allowWhileLocked;
+    }
+
+    public InteractEntity setAllowWhileLocked(boolean allow) {
+        this.allowWhileLocked = allow;
+
+        return this;
+    }
+
     @Override
     public @NotNull InteractionMeta getEntityMeta() {
         return (InteractionMeta) super.getEntityMeta();
     }
 
-    public void setConsumer(@NotNull Consumer<PlayerEntityInteractEvent> consumer) {
+    public InteractEntity setConsumer(@NotNull Consumer<PlayerEntityInteractEvent> consumer) {
         this.consumer = consumer;
-
         eventNode().addListener(PlayerEntityInteractEvent.class, consumer);
+
+        return this;
     }
 
     public void interact(PlayerEntityInteractEvent interaction) {
@@ -49,25 +62,27 @@ public class InteractEntity extends StaticEntity {
         this.consumer.accept(interaction);
     }
 
-    public void setWidth(float width) {
+    public InteractEntity setWidth(float width) {
         getEntityMeta().setWidth(width);
         updateBoundingBox();
+        return this;
     }
 
     public float getWidth() {
         return getEntityMeta().getWidth();
     }
 
-    public void setHeight(float height) {
+    public InteractEntity setHeight(float height) {
         getEntityMeta().setHeight(height);
         updateBoundingBox();
+        return this;
     }
 
     public float getHeight() {
         return getEntityMeta().getHeight();
     }
 
-    public void updateBoundingBox() {
+    protected void updateBoundingBox() {
         setBoundingBox(getWidth(), getHeight(), getWidth());
     }
 }

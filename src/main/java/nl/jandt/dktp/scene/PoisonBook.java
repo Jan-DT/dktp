@@ -17,6 +17,7 @@ public class PoisonBook {
     private static final Component name = mm.deserialize("<#dd8844>Gentlemen's Guide to Poisoning");
 
     public static @NotNull Book getBook() {
+        // TODO: add more pages
         final Collection<Component> pages = List.of(
                 mm.deserialize("<br><br><b> Gentlemen's Guide<br>    to Poisoning</b><br><br><br><br><br><br><br><br>   Charles Gentlemen<br><br>           1835"),
                 mm.deserialize(""),
