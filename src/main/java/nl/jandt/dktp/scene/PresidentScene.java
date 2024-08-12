@@ -10,10 +10,10 @@ import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
-import net.minestom.server.entity.metadata.villager.VillagerMeta;
-import net.minestom.server.event.player.PlayerChatEvent;
-import net.minestom.server.network.packet.client.play.ClientUseItemPacket;
+import net.minestom.server.item.ItemStack;
 import net.minestom.server.network.packet.server.play.EntityAnimationPacket;
+import net.minestom.server.network.packet.server.play.ParticlePacket;
+import net.minestom.server.particle.Particle;
 import net.minestom.server.potion.Potion;
 import net.minestom.server.potion.PotionEffect;
 import net.minestom.server.timer.Scheduler;
@@ -21,12 +21,15 @@ import net.minestom.server.timer.TaskSchedule;
 import nl.jandt.dktp.CustomPlayer;
 import nl.jandt.dktp.entity.HumanEntity;
 import nl.jandt.dktp.poison.Poison;
+import nl.jandt.dktp.scene.animation.PresidentBecomeEntityAnimation;
+import nl.jandt.dktp.scene.animation.PresidentExplodeAnimation;
+import nl.jandt.dktp.scene.animation.PresidentFloatAnimation;
+import nl.jandt.dktp.scene.animation.PresidentNoEffectAnimation;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+
+import static nl.jandt.dktp.scene.animation.Animation.*;
 
 public class PresidentScene extends BaseScene {
     private static final MiniMessage mm = MiniMessage.miniMessage();
@@ -34,8 +37,7 @@ public class PresidentScene extends BaseScene {
 
     private static final Pos spawnPos = new Pos(0.5, 1.1, 50, 0, 0);
     private static final Pos podiumPos = new Pos(0.5, 2, 69.5, 180, 0);
-//    private final LivingEntity president = new LivingEntity(EntityType.VILLAGER);
-    private final LivingEntity president = new HumanEntity("President", PlayerSkin.fromUsername("Meshuga"), Component.text("President Poopyhead"));
+    private final HumanEntity president = new HumanEntity("President", PlayerSkin.fromUsername("Meshuga"), mm.deserialize("<#4444dd>President Poopyhead"));
     private final Map<Entity, Pos> npcs = Map.of(
             new Entity(EntityType.VILLAGER), new Pos(4, 1, 60),
 
@@ -55,67 +57,33 @@ public class PresidentScene extends BaseScene {
 
     private void spawnEntities() {
         president.setInstance(getInstance(), podiumPos);
-        president.setCustomName(mm.deserialize("<#ffffff>President Poopyhead"));
-        president.setCustomNameVisible(true);
 
         for (Map.Entry<Entity, Pos> entry : npcs.entrySet()) {
             entry.getKey().setInstance(getInstance(), entry.getValue());
         }
     }
 
-    public void presidentSays(Component message) {
-        getPlayer().sendMessage(mm.deserialize("<#4444dd><name>: <#ffffff><message>",
-                Placeholder.component("name", president.getCustomName()),
-                Placeholder.component("message", message)));
-    }
-
-    private void presidentDrinks() {
-        final var player = getPlayer();
-
-        president.setItemInMainHand(poison.getItem());
-
-        var i = new AtomicInteger();
-        scheduler.scheduleTask(() -> {
-            scheduler.scheduleTask(() -> {
-                player.sendPacket(new EntityAnimationPacket(president.getEntityId(), EntityAnimationPacket.Animation.SWING_MAIN_ARM));
-                player.playSound(Sound.sound(Key.key("entity.generic.drink"), Sound.Source.MASTER, 1, 1));
-
-                if (i.incrementAndGet() < 5)
-                    return TaskSchedule.tick(5);
-                else {
-                    triggerPoisonEffect();
-                    return TaskSchedule.stop();
-                }
-            }, TaskSchedule.immediate());
-        }, TaskSchedule.millis(500), TaskSchedule.stop());
-    }
-
-    private void triggerPoisonEffect() {
-        final var player = getPlayer();
-        switch (poison.getEffect()) {
-            case NO_EFFECT -> {
-
-            }
-            case TASTE_WEIRD -> {
-            }
-            case BECOME_ENTITY -> {
-            }
-            case FLOAT -> {
-            }
-            case EXPLODE -> {
-            }
-            case KILL -> {
-            }
-        }
+    private void triggerScene() {
+        scheduleAfter(() -> {
+            var animation = switch (poison.getEffect()) {
+                case NO_EFFECT -> new PresidentNoEffectAnimation();
+                case EXPLODE -> new PresidentExplodeAnimation();
+                case FLOAT -> new PresidentFloatAnimation();
+                case BECOME_ENTITY -> new PresidentBecomeEntityAnimation();
+                default -> new PresidentNoEffectAnimation();
+            };
+            animation = new PresidentBecomeEntityAnimation();
+            animation.trigger(this);
+        }, TaskSchedule.millis(500));
     }
 
     @Override
     public void start() {
         super.start();
 
-        final var player = getPlayer();
-
         lockInteractions(true);
+
+        final var player = getPlayer();
 
         player.addEffect(new Potion(PotionEffect.DARKNESS, (byte) 1, 20, 0));
         player.addEffect(new Potion(PotionEffect.BLINDNESS, (byte) 1, 20, 0));
@@ -123,14 +91,12 @@ public class PresidentScene extends BaseScene {
 
         player.setRespawnPoint(spawnPos);
         player.teleport(spawnPos);
-        scheduler.scheduleTask(() -> {
+        scheduleAfter(() -> {
             player.showTitle(Title.title(mm.deserialize("<#4444dd><b>Press Conference"), mm.deserialize("<#4444dd>Presidential Palace, 2024"),
                     Title.Times.times(Duration.ofSeconds(1), Duration.ofSeconds(3), Duration.ofSeconds(1))));
-        }, TaskSchedule.seconds(5), TaskSchedule.stop());
+        }, TaskSchedule.seconds(5));
 
-        scheduler.scheduleTask(() -> {
-            presidentDrinks();
-        }, TaskSchedule.seconds(5), TaskSchedule.stop());
+        scheduleAfter(this::triggerScene, TaskSchedule.seconds(5));
     }
 
     @Override
@@ -144,5 +110,9 @@ public class PresidentScene extends BaseScene {
 
     public void setPoison(Poison poison) {
         this.poison = poison;
+    }
+
+    public HumanEntity getPresident() {
+        return president;
     }
 }
