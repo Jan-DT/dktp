@@ -5,7 +5,8 @@ Will you successfully figure out the secret formula before anyone catches you?**
 
 This game was made for the [Minestom](https://github.com/minestom/minestom) August 2024 Game Jam, themed **Color Changes Everything**.
 At first I wanted to make the 1000000000th Splatoon clone, but then the idea for this game popped up.
-I hope it is fun, because I have no clue will be! Also, in true game jam style is an absolute minimum viable product, but who cares.
+I hope it is fun, because I have no clue will be. Also, in true game jam style is an absolute minimum viable product, but who cares.
+Do not look at code for your own sanity. Thanks.
 
 ## Game Submission
 | Name | **Don't Kill the President!** |
