@@ -43,6 +43,7 @@ import java.util.*;
 
 import static nl.jandt.dktp.scene.animation.Animation.*;
 
+@SuppressWarnings("CodeBlock2Expr")
 public class GarageScene extends BaseScene {
     private static final MiniMessage mm = MiniMessage.miniMessage();
 
@@ -172,6 +173,7 @@ public class GarageScene extends BaseScene {
     /**
      * Called when the player clicks the brewing stand to mix the poison
      */
+    @SuppressWarnings("RedundantLabeledSwitchRuleCodeBlock")
     private void mixPoison(@NotNull CustomPlayer player) {
         if (poison.isMixed()) {
             player.sendMessage(mm("<#bb6699>It seems like this poison was already mixed"));
