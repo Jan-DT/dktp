@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @FunctionalInterface
 public interface Animation {
-    TaskSchedule trigger(BaseScene scene);
+    TaskSchedule trigger();
 
     static @NotNull Component mm(String string, TagResolver... resolvers) {
         return MiniMessage.miniMessage().deserialize(string, resolvers);

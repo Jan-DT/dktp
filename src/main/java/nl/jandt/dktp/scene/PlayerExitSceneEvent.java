@@ -4,9 +4,10 @@ import net.minestom.server.entity.Player;
 import net.minestom.server.event.trait.PlayerEvent;
 import org.jetbrains.annotations.NotNull;
 
+@SuppressWarnings("unused")
 public class PlayerExitSceneEvent implements PlayerEvent {
-    private Player player;
-    private Scene scene;
+    private final Player player;
+    private final Scene scene;
 
     public PlayerExitSceneEvent(Player player, Scene scene) {
         this.player = player;

@@ -1,8 +1,6 @@
 package nl.jandt.dktp.scene.animation;
 
-import net.kyori.adventure.text.Component;
 import net.minestom.server.timer.TaskSchedule;
-import nl.jandt.dktp.scene.BaseScene;
 import nl.jandt.dktp.scene.PresidentScene;
 import org.jetbrains.annotations.NotNull;
 
@@ -10,9 +8,12 @@ import static nl.jandt.dktp.scene.animation.Animation.*;
 
 public class PresidentNoEffectAnimation extends PresidentAnimation {
 
+    public PresidentNoEffectAnimation(PresidentScene scene) {
+        super(scene);
+    }
+
     @Override
-    public TaskSchedule trigger(BaseScene scene) {
-        this.scene = (PresidentScene) scene;
+    public TaskSchedule trigger() {
         return variation1();
     }
 

@@ -16,9 +16,9 @@ import static nl.jandt.dktp.scene.animation.Animation.*;
 public abstract class PresidentAnimation implements Animation {
     private static final MiniMessage mm = MiniMessage.miniMessage();
 
-    protected nl.jandt.dktp.scene.PresidentScene scene;
+    protected final nl.jandt.dktp.scene.PresidentScene scene;
 
-    protected void setScene(PresidentScene scene) {
+    public PresidentAnimation(PresidentScene scene) {
         this.scene = scene;
     }
 
@@ -60,7 +60,8 @@ public abstract class PresidentAnimation implements Animation {
     }
 
     protected void peopleCelebrate() {
-        scheduleRepeat(() -> scene.getPlayer().playSound(Sound.sound(Key.key("entity.villager.celebrate"), Sound.Source.MASTER, 1, 1)),
+        scheduleRepeat(() -> scene.getPlayer().playSound(Sound.sound(Key.key("entity.villager.celebrate"), Sound.Source.MASTER, 1, 1),
+                        scene.randomNpc().getPosition()),
                 TaskSchedule.immediate(), TaskSchedule.tick(7), 10);
     }
 }

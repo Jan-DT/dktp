@@ -18,18 +18,21 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
 
+import static nl.jandt.dktp.scene.animation.Animation.mm;
+
+@SuppressWarnings("unused")
 public class Poison {
     private static final MiniMessage mm = MiniMessage.miniMessage();
     private static final Logger log = LoggerFactory.getLogger(Poison.class);
     private static final int maxIngredients = 6;
 
     private final long seed;
+    private final PoisonEffect poisonEffect = PoisonEffect.NO_EFFECT;
     private final List<PoisonIngredient> ingredients = new ArrayList<>();
     private int ingredientSum = 0;
+    private boolean mixed = false;
     private ItemStack item;
-    private PoisonEffect poisonEffect = PoisonEffect.NO_EFFECT;
     private RGBLike color = TextColor.color(56, 56, 198);
 
     public Poison(long seed) {
@@ -48,9 +51,11 @@ public class Poison {
 
     public boolean addIngredient(PoisonIngredient ingredient) {
         if (ingredients.size() > maxIngredients) return false;
+        mixed = false;
 
         ingredients.add(ingredient);
         ingredientSum += ingredient.value();
+
         color = randomColor(new Random(seed + ingredientSum));
         generateItem();
         return true;
@@ -61,10 +66,10 @@ public class Poison {
     }
 
     protected void generateItem(RGBLike color) {
-        final var itemName = mm.deserialize("<#bb66ff>The Poison");
+        final var itemName = mm("<#bb66ff>The Poison");
         item = ItemStack.of(Material.POTION, DataComponentMap.EMPTY
                         .set(ItemComponent.ITEM_NAME, itemName)
-                        .set(ItemComponent.CUSTOM_NAME, mm.deserialize("<reset><#bbbbbb>You are holding <item_name>",
+                        .set(ItemComponent.CUSTOM_NAME, mm("<reset><#bbbbbb>You are holding <item_name>",
                                 Placeholder.component("item_name", itemName)))
                         .set(ItemComponent.POTION_CONTENTS, new PotionContents(PotionType.AWKWARD, color)));
     }
@@ -86,12 +91,14 @@ public class Poison {
     }
 
     public MixResult mix() {
-        ingredientSum += 1;
+        if (ingredientSum > 2) {
+            ingredientSum += 1;
+        }
 
         final var random = new Random(seed + ingredientSum);
-        color = randomColor(random);
-
+        if (ingredientSum > 0) color = randomColor(random);
         generateItem();
+        mixed = true;
         return MixResult.roll(ingredientSum, random);
     }
 
@@ -103,6 +110,10 @@ public class Poison {
         return color;
     }
 
+    public boolean isMixed() {
+        return mixed;
+    }
+
     public enum MixResult {
         SUCCESS,
         EXPLOSION;
@@ -110,7 +121,6 @@ public class Poison {
         static MixResult roll(long ingredientSum, Random random) {
             if (ingredientSum > 3) {
                 final var res = random.nextFloat();
-                log.debug("{}", res);
                 if (res > 0.2) return MixResult.SUCCESS;
                 else return MixResult.EXPLOSION;
             } else {

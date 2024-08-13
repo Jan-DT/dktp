@@ -5,14 +5,13 @@ import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.timer.Scheduler;
-import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
 import nl.jandt.dktp.CustomPlayer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
+@SuppressWarnings("unused")
 public abstract class BaseScene implements Scene {
     private final Scheduler scheduler = MinecraftServer.getSchedulerManager();
 
@@ -20,10 +19,10 @@ public abstract class BaseScene implements Scene {
     private final EventNode<Event> eventNode;
     private final CustomPlayer player;
     private final Instance instance;
+    private final AtomicBoolean lockInteractions = new AtomicBoolean(false);
 
     private boolean active = false;
     private int visit = 0;
-    private AtomicBoolean lockInteractions = new AtomicBoolean(false);
 
     public BaseScene(String id, CustomPlayer player, Instance instance) {
         this.sceneId = id;
@@ -35,7 +34,7 @@ public abstract class BaseScene implements Scene {
         MinecraftServer.getGlobalEventHandler().addChild(eventNode);
 
         eventNode.addListener(PlayerEnterSceneEvent.class, e -> {
-            if (e.getScene() == this) start();
+            if (e.getScene() == this) start(e.getContext());
         });
 
         eventNode.addListener(PlayerExitSceneEvent.class, e -> {
@@ -89,7 +88,7 @@ public abstract class BaseScene implements Scene {
     }
 
     @Override
-    public void start() {
+    public void start(SceneContext context) {
         this.active = true;
         this.visit++;
     }

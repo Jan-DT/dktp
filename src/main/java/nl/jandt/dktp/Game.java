@@ -4,15 +4,14 @@ import net.hollowcube.polar.*;
 import net.kyori.adventure.resource.ResourcePackInfo;
 import net.kyori.adventure.resource.ResourcePackRequest;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.command.builder.Command;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.GameMode;
+import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.player.*;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.LightingChunk;
-import nl.jandt.dktp.scene.GarageScene;
-import nl.jandt.dktp.scene.PresidentScene;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,8 +26,9 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
+
+import static nl.jandt.dktp.scene.animation.Animation.mm;
 
 
 public class Game {
@@ -44,8 +44,6 @@ public class Game {
             .packs(ResourcePackInfo.resourcePackInfo(packUUID, packUri, packHash))
             .prompt(mm.deserialize("<#33ff33>This resource pack is completely optional, but it does improve your experience."))
             .required(false).build();
-
-    private static final Random random = new Random();
 
     public static void main(String[] args) {
         log.info("Initializing server...");
@@ -74,18 +72,18 @@ public class Game {
             startGame((CustomPlayer) e.getPlayer());
         });
 
-        final var commandManager = MinecraftServer.getCommandManager();
-        final var resetCommand = new Command("reset");
-        resetCommand.addSyntax((sender, context) -> {
-            ((CustomPlayer) sender).setInstance(makeInstance(worlds.get("dktp1")));
-            startGame((CustomPlayer) sender);
+        eventHandler.addListener(PlayerChatEvent.class, e -> {
+            e.setChatFormat((chatEvent) -> mm("<#777777><player>: <message>",
+                    Placeholder.unparsed("player", chatEvent.getPlayer().getUsername()),
+                    Placeholder.unparsed("message", chatEvent.getMessage())));
         });
-        commandManager.register(resetCommand);
 
         eventHandler.addListener(PlayerSwapItemEvent.class, e -> e.setCancelled(true));
         eventHandler.addListener(PlayerChangeHeldSlotEvent.class, e -> e.setCancelled(true));
+        eventHandler.addListener(InventoryPreClickEvent.class, e -> e.setCancelled(true));
         eventHandler.addListener(PlayerBlockBreakEvent.class, e -> e.setCancelled(true));
         eventHandler.addListener(PlayerBlockPlaceEvent.class, e -> e.setCancelled(true));
+        eventHandler.addListener(PlayerPreEatEvent.class, e -> e.setCancelled(true));
 
         MinecraftServer.getConnectionManager().setPlayerProvider(CustomPlayer::new);
 
@@ -101,9 +99,8 @@ public class Game {
     }
 
     static void startGame(CustomPlayer player) {
-        // TODO: change seed to random!
 //        getSceneManager().switchScene(player, new GarageScene(player, 1));
-        getSceneManager().switchScene(player, new PresidentScene(player));
+        getSceneManager().startGame(player);
         player.setGameMode(GameMode.ADVENTURE);
     }
 
@@ -128,7 +125,7 @@ public class Game {
                     log.error("Failed to import world '{}': {}", path, e.toString());
                     continue;
                 }
-                log.debug("Imported world '{}'", path.toString());
+                log.debug("Imported world '{}'", path);
             }
         } catch (NoSuchFileException e) {
             log.debug("Import directory at '{}' not located, skipping...", importPath);
@@ -151,7 +148,7 @@ public class Game {
                     log.error("Failed to load world '{}': {}", path, e.toString());
                     continue;
                 }
-                log.debug("Loaded world '{}'", path.toString());
+                log.debug("Loaded world '{}'", path);
             }
         } catch (IOException e) {
             log.error("Failed to read world directory: {}", e.toString());

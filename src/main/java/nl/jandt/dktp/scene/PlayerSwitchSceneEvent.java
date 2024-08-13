@@ -5,10 +5,11 @@ import net.minestom.server.event.trait.CancellableEvent;
 import net.minestom.server.event.trait.PlayerEvent;
 import org.jetbrains.annotations.NotNull;
 
+@SuppressWarnings("unused")
 public class PlayerSwitchSceneEvent implements PlayerEvent, CancellableEvent {
-    private Player player;
-    private Scene fromScene;
-    private Scene toScene;
+    private final Player player;
+    private final Scene fromScene;
+    private final Scene toScene;
     private boolean cancelled = false;
 
     public PlayerSwitchSceneEvent(Player player, Scene fromScene, Scene toScene) {

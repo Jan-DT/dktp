@@ -2,8 +2,9 @@ package nl.jandt.dktp.scene.animation;
 
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.network.packet.server.play.EntityAnimationPacket;
+import net.minestom.server.network.packet.server.play.ParticlePacket;
+import net.minestom.server.particle.Particle;
 import net.minestom.server.timer.TaskSchedule;
-import nl.jandt.dktp.scene.BaseScene;
 import nl.jandt.dktp.scene.PresidentScene;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,9 +12,12 @@ import static nl.jandt.dktp.scene.animation.Animation.*;
 
 public class PresidentFloatAnimation extends PresidentAnimation {
 
+    public PresidentFloatAnimation(PresidentScene scene) {
+        super(scene);
+    }
+
     @Override
-    public TaskSchedule trigger(BaseScene scene) {
-        this.scene = (PresidentScene) scene;
+    public TaskSchedule trigger() {
         return variation1();
     }
 
@@ -39,10 +43,19 @@ public class PresidentFloatAnimation extends PresidentAnimation {
     protected void presidentFloats() {
         scene.getPresident().setNoGravity(true);
         scene.getPresident().setVelocity(new Vec(0, 0.4, 0));
+        scheduleRepeat(() -> scene.getPlayer().sendPackets(
+                        new ParticlePacket(Particle.CLOUD, scene.getPresident().getPosition(), new Vec(0.5, 0, 0.5), 0.05f, 3)
+                ), TaskSchedule.immediate(), TaskSchedule.tick(4), 5 * 9);
         scheduleRepeat(() -> scene.getPresident().teleport(scene.getPresident().getPosition()
-                .withPitch(scene.getPresident().getPosition().pitch()+3f)), TaskSchedule.millis(1500), TaskSchedule.tick(1), 20);
+                .withPitch(scene.getPresident().getPosition().pitch()+3f)),
+                TaskSchedule.millis(1500), TaskSchedule.tick(1), 20);
         scheduleRepeat(() -> scene.getPlayer()
                 .sendPacket(new EntityAnimationPacket(scene.getPresident().getEntityId(), EntityAnimationPacket.Animation.SWING_MAIN_ARM)),
                 TaskSchedule.seconds(4), TaskSchedule.tick(5), 10);
+
+        scheduleAfter(() -> {
+            scene.getPresident().setVelocity(Vec.ZERO);
+            scene.getPresident().teleport(PresidentScene.PODIUM_POS);
+        }, TaskSchedule.seconds(10));
     }
 }

@@ -7,7 +7,6 @@ import net.minestom.server.coordinate.Vec;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.timer.TaskSchedule;
-import nl.jandt.dktp.scene.BaseScene;
 import nl.jandt.dktp.scene.PresidentScene;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,9 +14,12 @@ import static nl.jandt.dktp.scene.animation.Animation.*;
 
 public class PresidentExplodeAnimation extends PresidentAnimation {
 
+    public PresidentExplodeAnimation(PresidentScene scene) {
+        super(scene);
+    }
+
     @Override
-    public TaskSchedule trigger(BaseScene scene) {
-        this.scene = (PresidentScene) scene;
+    public TaskSchedule trigger() {
         return variation1();
     }
 
