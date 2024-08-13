@@ -25,7 +25,7 @@ import static nl.jandt.dktp.scene.animation.Animation.mm;
 public class Poison {
     private static final MiniMessage mm = MiniMessage.miniMessage();
     private static final Logger log = LoggerFactory.getLogger(Poison.class);
-    private static final int maxIngredients = 6;
+    private static final int maxIngredients = 4;
 
     private final long seed;
     private final PoisonEffect poisonEffect = PoisonEffect.NO_EFFECT;
