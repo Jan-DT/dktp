@@ -10,6 +10,7 @@ import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.player.*;
+import net.minestom.server.extras.bungee.BungeeCordProxy;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.LightingChunk;
 import org.jetbrains.annotations.NotNull;
@@ -84,6 +85,8 @@ public class Game {
         eventHandler.addListener(PlayerBlockBreakEvent.class, e -> e.setCancelled(true));
         eventHandler.addListener(PlayerBlockPlaceEvent.class, e -> e.setCancelled(true));
         eventHandler.addListener(PlayerPreEatEvent.class, e -> e.setCancelled(true));
+
+        BungeeCordProxy.enable();
 
         MinecraftServer.getConnectionManager().setPlayerProvider(CustomPlayer::new);
 
